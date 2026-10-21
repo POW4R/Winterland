@@ -1,0 +1,46 @@
+# ❄ Winterland — Christmas plugin config ❄
+
+winterland:
+  # Name of the Christmas dimension (world folder). Created automatically on first start.
+  world-name: winterland
+  # Lock the time of day in Winterland. 18000 = midnight (Christmas Eve vibes, lights glow, elves spawn).
+  # 6000 = noon. Set to -1 for a normal day/night cycle.
+  locked-time: 18000
+  # Keep it snowing in Winterland forever.
+  always-snowing: true
+  # Chance that a naturally spawned zombie in Winterland becomes a Naughty Elf / The Grinch.
+  elf-chance: 0.35
+  grinch-chance: 0.01
+  # Play sleigh bells and snowflakes around players now and then.
+  ambience: true
+
+naughty-list:
+  # How long a player stays on the naughty list after hurting villagers, pets, golems or other players.
+  hours: 24
+
+snowball-fights:
+  # true = snowball knockback & hit counter everywhere. false = only inside Winterland.
+  everywhere: true
+  knockback: 0.45
+
+snow-globe:
+  cooldown-seconds: 10
+
+advent:
+  # Time zone used for the advent calendar and Santa's daily present. Empty = server default.
+  timezone: ""
+  # Let players open doors they missed on earlier days of December.
+  allow-catch-up: true
+  # For testing outside December: set to 1-24 to pretend today is that day of December. 0 = real date.
+  test-day: 0
+
+overworld-decorations:
+  # Randomly place Christmas trees, candy canes, snowmen and gingerbread houses in NEWLY
+  # generated chunks of your normal worlds. Common in snowy biomes, rare (and silly) everywhere else.
+  enabled: true
+  # Only decorate new chunks during December.
+  only-in-december: false
+  # Multiplier for how often decorations appear. 2.0 = twice as many, 0.5 = half.
+  frequency: 1.0
+  # Which worlds to decorate. Empty = every overworld-type world (Winterland itself is never touched here).
+  worlds: []

@@ -1,0 +1,27 @@
+name: Winterland
+version: '${version}'
+main: me.slemm.winterland.WinterlandPlugin
+api-version: '26.2'
+author: slemm
+description: A festive Christmas dimension with Santa, presents, elves, the Grinch and an advent calendar.
+load: POSTWORLD
+
+commands:
+  xmas:
+    description: Winterland / Christmas commands
+    usage: /xmas help
+    aliases: [christmas, winterland]
+  advent:
+    description: Open the advent calendar
+    usage: /advent
+
+permissions:
+  winterland.tp:
+    description: Use /xmas tp and /xmas leave
+    default: true
+  winterland.advent:
+    description: Use the advent calendar
+    default: true
+  winterland.admin:
+    description: Give items, place Santa, reload config
+    default: op
