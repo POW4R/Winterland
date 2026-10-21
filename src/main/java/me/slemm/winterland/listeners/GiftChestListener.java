@@ -84,6 +84,7 @@ public final class GiftChestListener implements Listener {
         player.playSound(block.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.6f);
         block.getWorld().spawnParticle(Particle.FIREWORK, block.getLocation().add(0.5, 1.2, 0.5), 25, 0.3, 0.3, 0.3, 0.05);
         player.sendActionBar(Text.plain("🎁 You found a gift chest!", Text.GOLD));
+        plugin.advancements().grant(player, me.slemm.winterland.Advancements.Adv.GIFT_CHEST);
     }
 
     private static String key(Block b) {

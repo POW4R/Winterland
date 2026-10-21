@@ -1,5 +1,6 @@
 package me.slemm.winterland.listeners;
 
+import me.slemm.winterland.Advancements;
 import me.slemm.winterland.Text;
 import me.slemm.winterland.WinterlandPlugin;
 import net.kyori.adventure.text.Component;
@@ -42,5 +43,7 @@ public final class SnowballListener implements Listener {
 
         int hits = plugin.stats().addHit(shooter);
         shooter.sendActionBar(Component.text("❄ Hit " + target.getName() + "! (" + hits + " total)", Text.ICE));
+        plugin.advancements().grant(shooter, Advancements.Adv.SNOWBALL);
+        if (hits >= 100) plugin.advancements().grant(shooter, Advancements.Adv.SNOWBALL_CHAMPION);
     }
 }

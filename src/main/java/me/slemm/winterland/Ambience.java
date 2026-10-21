@@ -1,10 +1,15 @@
 package me.slemm.winterland;
 
+import org.bukkit.HeightMap;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowman;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,9 +39,12 @@ final class Ambience {
             w.setThundering(false);
             w.setWeatherDuration(20 * 60 * 30);
         }
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        if (s.snowGolems()) {
+            for (Player p : w.getPlayers()) if (r.nextInt(4) == 0) spawnGolemNear(p, r);
+        }
         if (!s.ambience()) return;
 
-        ThreadLocalRandom r = ThreadLocalRandom.current();
         for (Player p : w.getPlayers()) {
             p.spawnParticle(Particle.SNOWFLAKE, p.getLocation().add(0, 3, 0), 25, 6, 2, 6, 0.01);
             if (r.nextInt(8) == 0) jingle(p, r);
@@ -47,6 +55,23 @@ final class Ambience {
                 }
             }
         }
+    }
+
+    /** Keeps a few Snow Golems around each player, out of sight (16–40 blocks away) on snowy ground. */
+    private void spawnGolemNear(Player p, ThreadLocalRandom r) {
+        Location at = p.getLocation();
+        if (p.getNearbyEntities(48, 32, 48).stream().filter(e -> e instanceof Snowman).count() >= 3) return;
+        double angle = r.nextDouble(Math.PI * 2), dist = 16 + r.nextDouble(24);
+        int x = at.getBlockX() + (int) (Math.cos(angle) * dist);
+        int z = at.getBlockZ() + (int) (Math.sin(angle) * dist);
+        World w = p.getWorld();
+        if (!w.isChunkLoaded(x >> 4, z >> 4)) return;
+        Block ground = w.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+        Material m = ground.getType();
+        if (m != Material.GRASS_BLOCK && m != Material.SNOW_BLOCK) return;
+        Block feet = ground.getRelative(0, 1, 0), head = ground.getRelative(0, 2, 0);
+        if (!feet.isPassable() || feet.isLiquid() || !head.isPassable() || head.isLiquid()) return;
+        w.spawn(ground.getLocation().add(0.5, 1, 0.5), Snowman.class);
     }
 
     /** A short sleigh-bell jingle, far away and quiet. */

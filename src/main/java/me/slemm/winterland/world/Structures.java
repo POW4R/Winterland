@@ -109,8 +109,10 @@ public final class Structures {
 
     // -------------------------------------------------------------- snowman
 
+    /** A living Snow Golem; where one would melt, a snow-block statue of one instead. */
     public static boolean snowman(Placer p, Random random, int x, int ground, int z) {
         for (int y = ground + 1; y <= ground + 4; y++) if (!p.isFree(x, y, z)) return false;
+        if (p.spawnSnowGolem(x, ground + 1, z)) return true;
         p.set(x, ground + 1, z, Material.SNOW_BLOCK);
         p.set(x, ground + 2, z, Material.SNOW_BLOCK);
         p.set(x, ground + 3, z, Placer.facing(Material.CARVED_PUMPKIN, Placer.randomFace(random)));

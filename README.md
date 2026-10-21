@@ -14,10 +14,12 @@ The first start generates the `winterland` world, which can take a little while.
 **Winterland dimension**: an endless Christmas Eve. It's always snowing and always midnight, both configurable.
 - Rolling snowy hills, frozen lakes and snow-capped mountains (snowy plains / taiga / grove / frozen peaks biomes)
 - Decorated Christmas trees with glowing baubles and a star on top, sometimes with gift chests underneath
-- Giant candy canes, block snowmen and rare gingerbread houses (with a gift chest inside)
+- Giant candy canes, living Snow Golems and rare gingerbread houses (with a gift chest inside)
 - Ores, so it's a real place to play, not just a showroom
 
 **Christmas in the overworld too**: newly generated chunks in your normal world(s) randomly get Christmas trees, candy canes, snowmen and the occasional gingerbread house. They're fairly common in snowy biomes and rare everywhere else, so expect a decorated tree in a desert or a snowman in a jungle. Their chests are gift chests too. Already-explored terrain is never touched. You can tune the frequency, limit it to December, or pick which worlds get decorations under `overworld-decorations` in the config.
+
+**Advancements**: Winterland has its own tab in the vanilla advancements screen (press `L`), with 17 advancements: travel to Winterland, open presents, visit Santa, build a Snow Golem, win snowball fights, defeat the Grinch, finish the advent calendar and more.
 
 **Gift chests**: every chest generated in Winterland fills with presents and goodies the first time anyone opens it. Chests placed by players never do.
 

@@ -12,9 +12,12 @@ import me.slemm.winterland.world.WinterlandGenerator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.HeightMap;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.block.Block;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
@@ -33,6 +36,7 @@ public final class WinterlandPlugin extends JavaPlugin {
     private SnowballStats stats;
     private AdventCalendar advent;
     private World winterland;
+    private Advancements advancements;
 
     @Override
     public void onEnable() {
@@ -44,6 +48,8 @@ public final class WinterlandPlugin extends JavaPlugin {
         items.registerRecipes();
 
         winterland = createWinterland();
+        advancements = new Advancements(this);
+        advancements.register();
 
         advent = new AdventCalendar(this);
         var pm = getServer().getPluginManager();
@@ -127,11 +133,19 @@ public final class WinterlandPlugin extends JavaPlugin {
             player.sendMessage(Component.text("You're already in Winterland! ❄", NamedTextColor.AQUA));
             return;
         }
-        player.getPersistentDataContainer().set(keys.returnLoc, PersistentDataType.STRING, serialize(player.getLocation()));
+        String from = serialize(player.getLocation());
         Location spawn = winterland.getSpawnLocation();
-        Location safe = winterland.getHighestBlockAt(spawn).getLocation().add(0.5, 1, 0.5);
-        safe.setYaw(player.getLocation().getYaw());
-        player.teleport(safe);
+        // Load (or generate) the spawn chunk off the main thread first, then pick a safe spot in it.
+        winterland.getChunkAtAsync(spawn).thenAccept(chunk -> {
+            if (!player.isOnline()) return;
+            Location safe = safeSpot(winterland, spawn.getBlockX(), spawn.getBlockZ());
+            safe.setYaw(player.getLocation().getYaw());
+            travel(player, safe, () -> player.getPersistentDataContainer().set(keys.returnLoc, PersistentDataType.STRING, from));
+        }).exceptionally(e -> {
+            getLogger().warning("Could not load the Winterland spawn chunk: " + e);
+            player.sendMessage(Component.text("Winterland couldn't be reached right now. Try again in a moment.", NamedTextColor.RED));
+            return null;
+        });
     }
 
     public void leaveWinterland(Player player) {
@@ -142,7 +156,47 @@ public final class WinterlandPlugin extends JavaPlugin {
         String saved = player.getPersistentDataContainer().get(keys.returnLoc, PersistentDataType.STRING);
         Location back = saved == null ? null : deserialize(saved);
         if (back == null) back = Bukkit.getWorlds().get(0).getSpawnLocation();
-        player.teleport(back);
+        travel(player, back, () -> { });
+    }
+
+    /** Teleports asynchronously (chunks load without freezing the server) and tells the player if it failed. */
+    private void travel(Player player, Location to, Runnable onSuccess) {
+        if (player.isInsideVehicle()) player.leaveVehicle(); // teleports fail while riding something
+        player.teleportAsync(to).thenAccept(ok -> {
+            if (ok) {
+                onSuccess.run();
+            } else {
+                player.sendMessage(Component.text("The teleport was blocked (another plugin or a passenger may be stopping it).", NamedTextColor.RED));
+                getLogger().warning("Teleport of " + player.getName() + " to " + to.getWorld().getName() + " was cancelled.");
+            }
+        });
+    }
+
+    /** Standing spot on real ground near x/z: not on a tree, not inside blocks, not on water. */
+    private static Location safeSpot(World w, int x, int z) {
+        for (int r = 0; r <= 12; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue; // ring only
+                    int bx = x + dx, bz = z + dz;
+                    if ((bx >> 4) != (x >> 4) || (bz >> 4) != (z >> 4)) continue; // stay in the loaded chunk
+                    Block ground = w.getHighestBlockAt(bx, bz, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+                    if (!isGoodGround(ground.getType())) continue;
+                    Block feet = ground.getRelative(0, 1, 0), head = ground.getRelative(0, 2, 0);
+                    if (feet.isPassable() && !feet.isLiquid() && head.isPassable() && !head.isLiquid()) {
+                        return ground.getLocation().add(0.5, 1, 0.5);
+                    }
+                }
+            }
+        }
+        return w.getHighestBlockAt(x, z).getLocation().add(0.5, 1, 0.5);
+    }
+
+    private static boolean isGoodGround(Material m) {
+        return switch (m) {
+            case GRASS_BLOCK, SNOW_BLOCK, DIRT, STONE, GRAVEL, ICE, PACKED_ICE -> true;
+            default -> false;
+        };
     }
 
     private static String serialize(Location l) {
@@ -176,5 +230,6 @@ public final class WinterlandPlugin extends JavaPlugin {
     public Settings settings() { return settings; }
     public SnowballStats stats() { return stats; }
     public AdventCalendar advent() { return advent; }
+    public Advancements advancements() { return advancements; }
     public @Nullable World winterland() { return winterland; }
 }

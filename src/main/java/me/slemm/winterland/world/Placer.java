@@ -1,12 +1,14 @@
 package me.slemm.winterland.world;
 
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.entity.Snowman;
 import org.bukkit.generator.LimitedRegion;
 
 import java.util.Random;
@@ -23,6 +25,12 @@ public interface Placer {
     void set(int x, int y, int z, Material m);
 
     void set(int x, int y, int z, BlockData d);
+
+    /**
+     * Spawns a living Snow Golem standing at (x, y, z). Returns false if it can't live here
+     * (outside the area, or a biome so warm it would melt), so the caller can build a statue instead.
+     */
+    boolean spawnSnowGolem(int x, int y, int z);
 
     /** Block type, or BEDROCK if outside the allowed area. */
     Material get(int x, int y, int z);
@@ -59,6 +67,15 @@ public interface Placer {
             }
 
             @Override
+            public boolean spawnSnowGolem(int x, int y, int z) {
+                if (!r.isInRegion(x, y, z)) return false;
+                Snowman golem = r.spawn(new Location(null, x + 0.5, y, z + 0.5), Snowman.class);
+                golem.setPersistent(true);
+                golem.setRemoveWhenFarAway(false);
+                return true;
+            }
+
+            @Override
             public Material get(int x, int y, int z) {
                 return r.isInRegion(x, y, z) ? r.getType(x, y, z) : Material.BEDROCK;
             }
@@ -83,6 +100,17 @@ public interface Placer {
             @Override
             public void set(int x, int y, int z, BlockData d) {
                 if (inside(x, y, z)) chunk.getBlock(x & 15, y, z & 15).setBlockData(d, false);
+            }
+
+            @Override
+            public boolean spawnSnowGolem(int x, int y, int z) {
+                if (!inside(x, y, z)) return false;
+                // Snow golems melt where it's too warm to snow; leave a snowman statue there instead.
+                if (chunk.getBlock(x & 15, y, z & 15).getTemperature() >= 0.15) return false;
+                Snowman golem = w.spawn(new Location(w, x + 0.5, y, z + 0.5), Snowman.class);
+                golem.setPersistent(true);
+                golem.setRemoveWhenFarAway(false);
+                return true;
             }
 
             @Override
