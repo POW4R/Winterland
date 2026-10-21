@@ -197,6 +197,8 @@ public final class AdventCalendar implements Listener {
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1.2f);
         p.playSound(p.getLocation(), day == 24 ? Sound.UI_TOAST_CHALLENGE_COMPLETE : Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.4f);
         p.sendMessage(Text.msg("You opened door " + day + " of the Advent Calendar! 🎁", Text.GOLD));
+        plugin.advancements().grant(p, me.slemm.winterland.Advancements.Adv.ADVENT);
+        if (day == 24) plugin.advancements().grant(p, me.slemm.winterland.Advancements.Adv.ADVENT_24);
         render(p, event.getView().getTopInventory(), today);
     }
 

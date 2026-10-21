@@ -1,5 +1,6 @@
 package me.slemm.winterland.listeners;
 
+import me.slemm.winterland.Advancements.Adv;
 import me.slemm.winterland.Text;
 import me.slemm.winterland.WinterlandPlugin;
 import me.slemm.winterland.XmasItems;
@@ -15,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -71,6 +73,7 @@ public final class ItemListener implements Listener {
                 p.getWorld().spawnParticle(Particle.HEART, p.getLocation().add(0, 2, 0), 15, 0.6, 0.4, 0.6);
                 p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.8f);
                 p.sendMessage(Text.msg("Your heart grew three sizes that day! (+6 hearts for 10 minutes)", Text.XMAS_GREEN));
+                plugin.advancements().grant(p, Adv.THREE_SIZES);
             }
             default -> { /* food is handled on consume, hat is just worn */ }
         }
@@ -92,6 +95,7 @@ public final class ItemListener implements Listener {
             loot = plugin.items().rollPresent();
         }
         give(p, loot);
+        plugin.advancements().grant(p, Adv.UNWRAPPED);
 
         Location l = p.getLocation().add(0, 1.2, 0);
         p.getWorld().spawnParticle(Particle.FIREWORK, l, 30, 0.4, 0.4, 0.4, 0.05);
@@ -129,12 +133,14 @@ public final class ItemListener implements Listener {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 20 * 30, 1));
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 4, 1));
                 p.sendActionBar(Component.text("Run, run, as fast as you can! 🍪", Text.GOLD));
+                plugin.advancements().grant(p, Adv.GINGERBREAD);
             }
             case HOT_COCOA -> {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 60, 0));
                 p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 8, 0));
                 p.setFreezeTicks(0);
                 p.sendActionBar(Component.text("Warm and cozy! ☕", Text.COCOA));
+                plugin.advancements().grant(p, Adv.HOT_COCOA);
             }
             default -> { }
         }
@@ -150,6 +156,14 @@ public final class ItemListener implements Listener {
                 inv.setResult(null);
                 return;
             }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCrafted(CraftItemEvent event) {
+        if (event.getWhoClicked() instanceof Player p
+                && plugin.items().typeOf(event.getRecipe().getResult()) == XmasItems.Type.SNOW_GLOBE) {
+            plugin.advancements().grant(p, Adv.ROOT);
         }
     }
 

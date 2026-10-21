@@ -85,6 +85,7 @@ public final class SantaListener implements Listener {
         if (naughty != null && naughty > System.currentTimeMillis()) {
             ItemListener.give(p, plugin.items().create(XmasItems.Type.LUMP_OF_COAL));
             say(p, "Hmm... my list says you've been NAUGHTY, " + p.getName() + ". Coal for you!");
+            plugin.advancements().grant(p, me.slemm.winterland.Advancements.Adv.NAUGHTY);
             p.playSound(fx, Sound.ENTITY_VILLAGER_NO, 1f, 0.6f);
             santa.getWorld().spawnParticle(Particle.LARGE_SMOKE, fx, 15, 0.3, 0.3, 0.3, 0.01);
             return;
@@ -95,6 +96,7 @@ public final class SantaListener implements Listener {
         if (r.nextInt(4) == 0) ItemListener.give(p, plugin.items().create(XmasItems.Type.GINGERBREAD, 3));
         if (r.nextInt(10) == 0) ItemListener.give(p, plugin.items().create(XmasItems.Type.HOT_COCOA));
         say(p, String.format(NICE_LINES[r.nextInt(NICE_LINES.length)], p.getName()));
+        plugin.advancements().grant(p, me.slemm.winterland.Advancements.Adv.SANTA);
         p.playSound(fx, Sound.ENTITY_VILLAGER_CELEBRATE, 1f, 0.7f);
         p.playSound(fx, Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1.0f);
         santa.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, fx, 20, 0.5, 0.5, 0.5);

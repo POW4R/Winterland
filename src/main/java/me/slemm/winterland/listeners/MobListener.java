@@ -1,5 +1,6 @@
 package me.slemm.winterland.listeners;
 
+import me.slemm.winterland.Advancements.Adv;
 import me.slemm.winterland.Text;
 import me.slemm.winterland.WinterlandPlugin;
 import me.slemm.winterland.XmasItems;
@@ -55,6 +56,22 @@ public final class MobListener implements Listener {
         double r = ThreadLocalRandom.current().nextDouble();
         if (r < plugin.settings().grinchChance()) makeGrinch(z);
         else if (r < plugin.settings().grinchChance() + plugin.settings().elfChance()) makeElf(z);
+    }
+
+    /** "Do You Want to Build a Snowman?" goes to whoever is closest to a freshly built Snow Golem. */
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBuildGolem(CreatureSpawnEvent event) {
+        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.BUILD_SNOWMAN) return;
+        Player builder = null;
+        double best = 8 * 8;
+        for (Player p : event.getLocation().getWorld().getPlayers()) {
+            double d = p.getLocation().distanceSquared(event.getLocation());
+            if (d < best) {
+                best = d;
+                builder = p;
+            }
+        }
+        if (builder != null) plugin.advancements().grant(builder, Adv.SNOWMAN);
     }
 
     public void makeElf(Zombie z) {
@@ -126,12 +143,14 @@ public final class MobListener implements Listener {
         String type = dead.getPersistentDataContainer().get(plugin.keys().mobType, PersistentDataType.STRING);
         ThreadLocalRandom r = ThreadLocalRandom.current();
         if ("elf".equals(type)) {
+            if (killer != null) plugin.advancements().grant(killer, Adv.ELF);
             if (r.nextDouble() < 0.3) event.getDrops().add(plugin.items().create(XmasItems.Type.PRESENT));
             if (r.nextDouble() < 0.4) event.getDrops().add(plugin.items().create(XmasItems.Type.GINGERBREAD, 1 + r.nextInt(2)));
         } else if ("grinch".equals(type)) {
             event.getDrops().add(plugin.items().create(XmasItems.Type.PRESENT, 3 + r.nextInt(3)));
             event.getDrops().add(plugin.items().create(XmasItems.Type.GRINCH_HEART));
             event.setDroppedExp(60);
+            if (killer != null) plugin.advancements().grant(killer, Adv.GRINCH);
             String who = killer != null ? killer.getName() : "Someone";
             for (Player p : dead.getWorld().getPlayers()) {
                 p.sendMessage(Text.msg(who + " stopped the Grinch and saved Christmas! 🎄", Text.GOLD));
@@ -143,6 +162,7 @@ public final class MobListener implements Listener {
             long until = System.currentTimeMillis() + plugin.settings().naughtyHours() * 3_600_000L;
             killer.getPersistentDataContainer().set(plugin.keys().naughtyUntil, PersistentDataType.LONG, until);
             killer.sendActionBar(Component.text("Santa saw that... you're on the naughty list! 📜", NamedTextColor.DARK_RED));
+            plugin.advancements().grant(killer, Adv.NAUGHTY);
         }
     }
 

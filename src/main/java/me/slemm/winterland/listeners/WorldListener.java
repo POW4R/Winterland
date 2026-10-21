@@ -35,6 +35,7 @@ public final class WorldListener implements Listener {
                     Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofSeconds(1))));
             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1.0f);
             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.5f);
+            plugin.advancements().grant(p, me.slemm.winterland.Advancements.Adv.LET_IT_SNOW);
         } else if (plugin.isWinterland(event.getFrom())) {
             p.sendActionBar(Component.text("See you soon in Winterland! ❄", Text.ICE));
         }

@@ -13,6 +13,8 @@ winterland:
   grinch-chance: 0.01
   # Play sleigh bells and snowflakes around players now and then.
   ambience: true
+  # Snow Golems wander around Winterland (they also spawn near players in areas explored earlier).
+  snow-golems: true
 
 naughty-list:
   # How long a player stays on the naughty list after hurting villagers, pets, golems or other players.
